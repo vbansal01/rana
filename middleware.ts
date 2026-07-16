@@ -28,6 +28,9 @@ export async function middleware(req: NextRequest) {
   }
 
   if (pathname.startsWith("/members") || pathname.startsWith("/admin")) {
+    // Allow the login page through — without this, unauthenticated users get
+    // an infinite redirect loop (/members/login → no token → /members/login → …)
+    if (pathname === "/members/login") return NextResponse.next();
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     if (!token) return NextResponse.redirect(new URL("/members/login", req.url));
   }
