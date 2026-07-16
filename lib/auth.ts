@@ -9,7 +9,7 @@ async function lookupMember(email: string) {
   const supabase = createServerSupabaseClient();
   const { data } = await supabase
     .from("members")
-    .select("id, name, email, membership_type, member_number, status")
+    .select("id, membership_type, member_number, status")
     .eq("email", email.toLowerCase())
     .single();
   return data ?? null;
@@ -52,7 +52,6 @@ const providers: NextAuthOptions["providers"] = [
   }),
 ];
 
-// Only register social providers when credentials are configured
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   providers.unshift(
     GoogleProvider({
@@ -73,26 +72,28 @@ if (process.env.FACEBOOK_CLIENT_ID && process.env.FACEBOOK_CLIENT_SECRET) {
 
 export const authOptions: NextAuthOptions = {
   providers,
-
   session: { strategy: "jwt" },
-
   pages: {
     signIn: "/members/login",
     error:  "/members/login",
   },
-
   callbacks: {
+    // Only runs for social logins — credentials are validated by authorize() above
     async signIn({ account, user }) {
-      if (account?.provider === "credentials") return true;
+      if (!account || account.type === "credentials") return true;
+      if (!user.email) return false;
 
-      const member = await lookupMember(user.email!);
-      if (!member) return "/members/login?error=OAuthNotMember";
-
-      (user as any).membershipType = member.membership_type;
-      (user as any).memberNumber   = member.member_number;
-      (user as any).status         = member.status;
-      (user as any).memberId       = member.id;
-      return true;
+      try {
+        const member = await lookupMember(user.email);
+        if (!member) return "/members/login?error=OAuthNotMember";
+        (user as any).membershipType = member.membership_type;
+        (user as any).memberNumber   = member.member_number;
+        (user as any).status         = member.status;
+        (user as any).memberId       = member.id;
+        return true;
+      } catch {
+        return "/members/login?error=OAuthSignin";
+      }
     },
 
     async jwt({ token, user }) {

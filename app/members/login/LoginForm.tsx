@@ -1,43 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { signIn, getProviders } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 const ERROR_MESSAGES: Record<string, string> = {
-  OAuthNotMember:     "No RANA membership found for that account. Please sign in with your registered email.",
+  OAuthNotMember:        "No RANA membership found for that account. Please sign in with your registered email.",
   OAuthAccountNotLinked: "This email is already registered. Please sign in with your original method.",
-  OAuthSignin:        "Could not connect to the sign-in provider. Please try again.",
-  Default:            "Sign-in failed. Please try again.",
+  OAuthSignin:           "Could not connect to the sign-in provider. Please try again.",
+  Default:               "Sign-in failed. Please try again.",
 };
-
-function SocialButton({
-  provider,
-  label,
-  logo,
-  loading,
-  onClick,
-}: {
-  provider: string;
-  label: string;
-  logo: React.ReactNode;
-  loading: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      disabled={loading}
-      onClick={onClick}
-      className="w-full flex items-center justify-center gap-3 rounded-md border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground hover:bg-surface transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-    >
-      {loading ? <Loader2 size={15} className="animate-spin text-muted" /> : logo}
-      {label}
-    </button>
-  );
-}
 
 const GoogleLogo = (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -60,13 +34,22 @@ export function LoginForm() {
   const callbackUrl  = searchParams.get("callbackUrl") ?? "/members";
   const errorParam   = searchParams.get("error");
 
-  const [form, setForm]               = useState({ email: "", password: "" });
+  const [form, setForm]             = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading]         = useState(false);
-  const [socialLoading, setSocialLoading] = useState<"google" | "facebook" | null>(null);
-  const [error, setError]             = useState<string | null>(
+  const [loading, setLoading]       = useState(false);
+  const [socialLoading, setSocialLoading] = useState<string | null>(null);
+  const [error, setError]           = useState<string | null>(
     errorParam ? (ERROR_MESSAGES[errorParam] ?? ERROR_MESSAGES.Default) : null
   );
+  const [availableProviders, setAvailableProviders] = useState<string[]>([]);
+
+  // Discover which social providers are configured server-side
+  useEffect(() => {
+    getProviders().then((p) => {
+      if (!p) return;
+      setAvailableProviders(Object.keys(p).filter((k) => k !== "credentials"));
+    });
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -88,10 +71,12 @@ export function LoginForm() {
     }
   }
 
-  async function handleSocial(provider: "google" | "facebook") {
+  async function handleSocial(provider: string) {
     setSocialLoading(provider);
     await signIn(provider, { callbackUrl });
   }
+
+  const showSocial = availableProviders.length > 0;
 
   return (
     <>
@@ -101,30 +86,40 @@ export function LoginForm() {
         </div>
       )}
 
-      {/* Social buttons */}
-      <div className="space-y-2.5 mb-5">
-        <SocialButton
-          provider="google"
-          label="Continue with Google"
-          logo={GoogleLogo}
-          loading={socialLoading === "google"}
-          onClick={() => handleSocial("google")}
-        />
-        <SocialButton
-          provider="facebook"
-          label="Continue with Facebook"
-          logo={FacebookLogo}
-          loading={socialLoading === "facebook"}
-          onClick={() => handleSocial("facebook")}
-        />
-      </div>
-
-      {/* Divider */}
-      <div className="flex items-center gap-3 mb-5">
-        <div className="flex-1 h-px bg-border" />
-        <span className="text-[10px] uppercase tracking-widest text-muted">or</span>
-        <div className="flex-1 h-px bg-border" />
-      </div>
+      {/* Social buttons — only rendered when providers are configured */}
+      {showSocial && (
+        <>
+          <div className="space-y-2.5 mb-5">
+            {availableProviders.includes("google") && (
+              <button
+                type="button"
+                disabled={!!socialLoading}
+                onClick={() => handleSocial("google")}
+                className="w-full flex items-center justify-center gap-3 rounded-md border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground hover:bg-surface transition-colors disabled:opacity-60"
+              >
+                {socialLoading === "google" ? <Loader2 size={15} className="animate-spin text-muted" /> : GoogleLogo}
+                Continue with Google
+              </button>
+            )}
+            {availableProviders.includes("facebook") && (
+              <button
+                type="button"
+                disabled={!!socialLoading}
+                onClick={() => handleSocial("facebook")}
+                className="w-full flex items-center justify-center gap-3 rounded-md border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground hover:bg-surface transition-colors disabled:opacity-60"
+              >
+                {socialLoading === "facebook" ? <Loader2 size={15} className="animate-spin text-muted" /> : FacebookLogo}
+                Continue with Facebook
+              </button>
+            )}
+          </div>
+          <div className="flex items-center gap-3 mb-5">
+            <div className="flex-1 h-px bg-border" />
+            <span className="text-[10px] uppercase tracking-widest text-muted">or</span>
+            <div className="flex-1 h-px bg-border" />
+          </div>
+        </>
+      )}
 
       {/* Credentials form */}
       <form onSubmit={handleSubmit} className="space-y-4">

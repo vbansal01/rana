@@ -32,8 +32,8 @@ const VALUES = [
 ];
 
 const LEADERSHIP = [
-  { name: "Anil Mehta", title: "President", tenure: "2024–Present" },
-  { name: "Priya Joshi", title: "Vice President", tenure: "2024–Present" },
+  { name: "Ripudaman Singh Rana", title: "President", tenure: "2026–Present" },
+  { name: "Prakash Sharma", title: "Vice President", tenure: "2026–Present" },
   { name: "Rajiv Sharma", title: "Secretary General", tenure: "2023–Present" },
   { name: "Sunita Rathore", title: "Treasurer", tenure: "2024–Present" },
 ];

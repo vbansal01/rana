@@ -1,61 +1,67 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createHmac } from "crypto";
+import { createServerSupabaseClient } from "@/lib/supabase";
 
-function base32Decode(s: string): Buffer {
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-  const clean = s.toUpperCase().replace(/=+$/, "").replace(/\s/g, "");
-  let bits = 0, val = 0;
-  const bytes: number[] = [];
-  for (const ch of clean) {
-    const idx = alphabet.indexOf(ch);
-    if (idx === -1) continue;
-    val = (val << 5) | idx;
-    bits += 5;
-    if (bits >= 8) {
-      bytes.push((val >>> (bits - 8)) & 0xff);
-      bits -= 8;
-    }
+// DELETE THIS FILE after debugging
+export async function GET(req: NextRequest) {
+  const email = req.nextUrl.searchParams.get("email");
+
+  // 1. Check Supabase env vars
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || supabaseUrl.includes("placeholder")) {
+    return NextResponse.json({ error: "NEXT_PUBLIC_SUPABASE_URL not set" }, { status: 500 });
   }
-  return Buffer.from(bytes);
-}
+  if (!serviceKey || serviceKey === "placeholder") {
+    return NextResponse.json({ error: "SUPABASE_SERVICE_ROLE_KEY not set" }, { status: 500 });
+  }
 
-function hotp(secret: string, counter: number): string {
-  const key = base32Decode(secret);
-  const buf = Buffer.alloc(8);
-  buf.writeUInt32BE(Math.floor(counter / 0x100000000), 0);
-  buf.writeUInt32BE(counter >>> 0, 4);
-  const hmac = createHmac("sha1", key).update(buf).digest();
-  const offset = hmac[hmac.length - 1] & 0xf;
-  const code =
-    (((hmac[offset] & 0x7f) << 24) |
-     ((hmac[offset + 1] & 0xff) << 16) |
-     ((hmac[offset + 2] & 0xff) << 8) |
-      (hmac[offset + 3] & 0xff)) % 1000000;
-  return code.toString().padStart(6, "0");
-}
+  // 2. Test Supabase connection
+  try {
+    const supabase = createServerSupabaseClient();
+    const { count, error: countErr } = await supabase
+      .from("members")
+      .select("*", { count: "exact", head: true });
 
-// DELETE THIS ROUTE AFTER DEBUGGING
-export async function GET(_req: NextRequest) {
-  const email   = process.env.ADMIN_EMAIL;
-  const hash    = process.env.ADMIN_PASSWORD_HASH;
-  const totpKey = process.env.ADMIN_TOTP_SECRET;
-  const jwtKey  = process.env.ADMIN_JWT_SECRET;
+    if (countErr) {
+      return NextResponse.json({ error: "Supabase query failed", detail: countErr.message }, { status: 500 });
+    }
 
-  const counter = Math.floor(Date.now() / 1000 / 30);
-  const currentCode = totpKey ? hotp(totpKey, counter) : null;
+    // 3. If email param given, check if that member exists
+    if (email) {
+      const { data, error: findErr } = await supabase
+        .from("members")
+        .select("id, name, email, status, membership_type, password_hash")
+        .eq("email", email.toLowerCase())
+        .single();
 
-  return NextResponse.json({
-    env: {
-      ADMIN_EMAIL:          email        ? `set (${email})`               : "MISSING",
-      ADMIN_PASSWORD_HASH:  hash         ? `set (${hash.slice(0,7)}…)`    : "MISSING",
-      ADMIN_TOTP_SECRET:    totpKey      ? `set (${totpKey.slice(0,4)}…)` : "MISSING",
-      ADMIN_JWT_SECRET:     jwtKey       ? "set"                          : "MISSING",
-    },
-    totp: {
-      server_time_utc: new Date().toISOString(),
-      counter,
-      current_code:    currentCode,
-      note: "This code should match your Google Authenticator app right now",
-    },
-  });
+      if (findErr || !data) {
+        return NextResponse.json({
+          supabase: "connected",
+          total_members: count,
+          member_found: false,
+          email_checked: email,
+        });
+      }
+
+      return NextResponse.json({
+        supabase: "connected",
+        total_members: count,
+        member_found: true,
+        member: {
+          id: data.id,
+          name: data.name,
+          email: data.email,
+          status: data.status,
+          membership_type: data.membership_type,
+          has_password_hash: !!data.password_hash,
+          hash_prefix: data.password_hash?.slice(0, 7),
+        },
+      });
+    }
+
+    return NextResponse.json({ supabase: "connected", total_members: count });
+  } catch (e: any) {
+    return NextResponse.json({ error: "Exception", detail: e.message }, { status: 500 });
+  }
 }

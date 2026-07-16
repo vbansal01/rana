@@ -48,7 +48,7 @@ export default async function MembersPage() {
   const member = await getMemberData((session.user as { id?: string }).id ?? "demo");
 
   return (
-    <div className="min-h-screen bg-surface pt-20">
+    <div className="min-h-screen bg-surface">
       <div className="bg-navy border-b border-white/10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
