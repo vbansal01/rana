@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { X, Megaphone } from "lucide-react";
+import { X, Tent } from "lucide-react";
 
 export function AnnouncementBanner() {
   const [visible, setVisible] = useState(true);
@@ -11,14 +11,14 @@ export function AnnouncementBanner() {
   return (
     <div className="bg-navy text-white py-2 px-4 relative z-50">
       <div className="mx-auto max-w-7xl flex items-center justify-center gap-3 text-sm">
-        <Megaphone size={14} className="text-accent shrink-0" />
+        <Tent size={14} className="text-accent shrink-0" />
         <p className="text-center text-white/80">
-          <span className="font-semibold text-white">RANA Holi Hungama 2026</span>
+          <span className="font-semibold text-white">RANA Yosemite Camping Summit 2026</span>
           {" — "}
-          March 15 · ICC Community Center, Milpitas · Tickets on sale now!{" "}
-          <a href="https://www.tickettailor.com/events/rana/2034665" target="_blank" rel="noopener noreferrer" className="underline text-accent hover:text-accent-hover font-semibold">
-            Book tickets →
-          </a>
+          Sept 11–13 · Housekeeping Camp, Yosemite NP{" "}
+          <Link href="/events/yosemite-2026/register" className="underline text-accent hover:text-accent-hover font-semibold">
+            Join the waitlist →
+          </Link>
         </p>
         <button
           onClick={() => setVisible(false)}

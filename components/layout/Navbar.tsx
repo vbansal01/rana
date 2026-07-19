@@ -12,7 +12,6 @@ const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Events", href: "/events" },
   { label: "About", href: "/about" },
-  { label: "Past Presidents", href: "/past-presidents" },
   { label: "Sponsors", href: "/#sponsors" },
   { label: "Contact", href: "/contact" },
 ];
@@ -32,7 +31,6 @@ export function Navbar() {
 
   useEffect(() => { setMobileOpen(false); }, [pathname]);
 
-  // Hide navbar on admin and members pages (after all hooks)
   const isAdmin   = pathname.startsWith("/rana-admin") || pathname.startsWith("/admin");
   const isMembers = pathname.startsWith("/members");
   if (isAdmin || isMembers) return null;
@@ -50,7 +48,7 @@ export function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center group">
           <Image
-            src="https://rana.org/wp-content/uploads/2025/10/Rana_logo.jpg"
+            src="/Rana-logo.jpeg"
             alt="RANA — Rajasthan Alliance of North America"
             width={120}
             height={48}

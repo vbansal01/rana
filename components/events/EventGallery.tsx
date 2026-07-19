@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { Calendar, MapPin, X } from "lucide-react";
+import { Calendar, MapPin, X, ExternalLink } from "lucide-react";
 import { formatDate, cn } from "@/lib/utils";
 import type { Event } from "@/lib/types";
 
@@ -47,7 +47,7 @@ export function EventGallery({ events }: EventGalleryProps) {
           <div
             key={event.id}
             className="group cursor-pointer rounded-card overflow-hidden border border-border hover:shadow-card-hover hover:border-accent/20 transition-all duration-300 bg-background"
-            onClick={() => setLightboxEvent(event)}
+            onClick={() => event.ticketUrl ? window.open(event.ticketUrl, "_blank", "noopener,noreferrer") : setLightboxEvent(event)}
           >
             <div className="relative overflow-hidden">
               <div
@@ -67,6 +67,11 @@ export function EventGallery({ events }: EventGalleryProps) {
               <span className="absolute top-3 left-3 section-label bg-accent/90 text-white px-2 py-1 rounded text-[10px]">
                 {event.category}
               </span>
+              {event.ticketUrl && (
+                <span className="absolute top-3 right-3 inline-flex items-center gap-1 bg-accent text-white text-[10px] font-semibold px-2 py-1 rounded">
+                  <ExternalLink size={9} /> Tickets
+                </span>
+              )}
             </div>
 
             <div className="p-4">
@@ -126,15 +131,27 @@ export function EventGallery({ events }: EventGalleryProps) {
               <p className="text-sm text-muted leading-relaxed mb-4">
                 {lightboxEvent.description}
               </p>
-              <div className="flex flex-wrap gap-4">
-                <span className="flex items-center gap-2 text-xs text-muted">
-                  <Calendar size={13} className="text-accent" />
-                  {formatDate(lightboxEvent.date)}
-                </span>
-                <span className="flex items-center gap-2 text-xs text-muted">
-                  <MapPin size={13} className="text-accent" />
-                  {lightboxEvent.location}
-                </span>
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex flex-wrap gap-4">
+                  <span className="flex items-center gap-2 text-xs text-muted">
+                    <Calendar size={13} className="text-accent" />
+                    {formatDate(lightboxEvent.date)}
+                  </span>
+                  <span className="flex items-center gap-2 text-xs text-muted">
+                    <MapPin size={13} className="text-accent" />
+                    {lightboxEvent.location}
+                  </span>
+                </div>
+                {lightboxEvent.ticketUrl && (
+                  <a
+                    href={lightboxEvent.ticketUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-xs font-semibold text-white hover:bg-accent-hover transition-colors"
+                  >
+                    <ExternalLink size={12} /> Get Tickets
+                  </a>
+                )}
               </div>
             </div>
           </div>

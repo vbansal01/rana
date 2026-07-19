@@ -65,14 +65,12 @@ export function HeroSection() {
             >
               Our Story
             </Link>
-            <a
-              href="https://www.tickettailor.com/events/rana/2034665"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-md bg-white/10 border border-white/20 px-6 py-3 text-sm font-semibold text-white hover:bg-white/20 transition-colors backdrop-blur-sm"
+            <Link
+              href="/events/yosemite-2026"
+              className="inline-flex items-center gap-2 rounded-md border border-accent/50 bg-accent/15 px-6 py-3 text-sm font-semibold text-accent hover:bg-accent/25 transition-colors backdrop-blur-sm"
             >
-              Holi Hungama 2026 Tickets
-            </a>
+              ⛺ Yosemite Camping 2026
+            </Link>
           </div>
 
           <div className="flex flex-wrap gap-6">

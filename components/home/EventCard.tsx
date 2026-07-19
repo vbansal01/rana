@@ -22,7 +22,6 @@ export function EventCard({ event, variant = "default" }: EventCardProps) {
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-navy/80 via-navy/20 to-transparent" />
-          {/* Category badge */}
           <span className="absolute top-3 left-3 section-label bg-accent/90 text-white px-2 py-1 rounded text-[10px]">
             {event.category}
           </span>
@@ -46,13 +45,27 @@ export function EventCard({ event, variant = "default" }: EventCardProps) {
             </div>
           </div>
 
-          <Link
-            href={`/events/${event.id}`}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:text-accent-hover transition-colors group/link"
-          >
-            View details
-            <ArrowRight size={12} className="transition-transform group-hover/link:translate-x-0.5" />
-          </Link>
+          <div className="flex items-center gap-3">
+            {event.ticketUrl ? (
+              <a
+                href={event.ticketUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:text-accent-hover transition-colors group/link"
+              >
+                View details
+                <ArrowRight size={12} className="transition-transform group-hover/link:translate-x-0.5" />
+              </a>
+            ) : (
+              <Link
+                href={`/events/${event.id}`}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:text-accent-hover transition-colors group/link"
+              >
+                View details
+                <ArrowRight size={12} className="transition-transform group-hover/link:translate-x-0.5" />
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     );

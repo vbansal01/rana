@@ -7,6 +7,17 @@ import type { Event, Sponsor } from "./types";
 export const MOCK_EVENTS: Event[] = [
   // - 2026 -
   {
+    id: "yosemite-2026",
+    title: "RANA Yosemite Camping Summit 2026",
+    description:
+      "Three days of hiking, yoga, campfire evenings, Rajasthani food, and community bonds forged under the stars of Yosemite Valley. Join the RANA family for our annual camping summit at Housekeeping Camp — where the John Muir Trail meets Khamma Ghani.",
+    date: "2026-09-11",
+    location: "Housekeeping Camp, Yosemite National Park, CA",
+    imageUrl: "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=1200&q=80",
+    category: "Camping",
+    featured: true,
+  },
+  {
     id: "holi-2026",
     title: "RANA Holi Hungama 2026",
     description:
@@ -15,6 +26,7 @@ export const MOCK_EVENTS: Event[] = [
     location: "ICC Community Center (Outdoor), 525 Los Coches St, Milpitas, CA 95035",
     imageUrl: "https://rana.org/wp-content/uploads/2026/02/rana-holi-2.jpg",
     category: "Holi",
+    ticketUrl: "https://www.tickettailor.com/events/rana/2034665",
     featured: true,
   },
 

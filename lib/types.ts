@@ -7,6 +7,7 @@ export interface Event {
   imageUrl: string;
   category: string;
   featured?: boolean;
+  ticketUrl?: string;
 }
 
 export interface Member {
